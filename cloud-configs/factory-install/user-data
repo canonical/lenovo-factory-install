@@ -5,16 +5,11 @@ autoinstall:
   storage:
     layout:
       name: direct
+      # use_gap - a feature set exposing the ability to edit existing partition tables and resize disks, is the feature use_gap in autoinstall.
+      # use_gap allows for a guided install into existing free space without reformatting the entire disk.
       mode: use_gap
       match:
-        - path: /dev/dm*
-        - path: /dev/md*
-        - path: /dev/nvme0n1
-        - path: /dev/pmem*
-        - path: /dev/mmcblk0
-        - path: /dev/sda
-        - path: /dev/sdb # in case if /dev/sda is installer USB disk, which by default won't be an installer target
-        - path: /dev/vda # VirtIO disk, for installing the image and testing the image in VMs
+        install-media: true # it takes the disk the installer was loaded from
 
   source:
     id: ubuntu-desktop
