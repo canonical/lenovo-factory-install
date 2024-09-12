@@ -1,13 +1,14 @@
 #cloud-config
-
 autoinstall:
   version: 1
+
   storage:
     layout:
       name: direct
       # use_gap - a feature set exposing the ability to edit existing partition tables and resize disks, is the feature use_gap in autoinstall.
       # use_gap allows for a guided install into existing free space without reformatting the entire disk.
-      #mode: use_gap
+      # In use_gap mode, we need an *unpartitioned* space on the disk to install the OS.
+      mode: use_gap
       match:
         install-media: true # it takes the disk the installer was loaded from
 
@@ -18,19 +19,15 @@ autoinstall:
     - "nmcli networking off"
 
   late-commands:
-    # - "bash /cdrom/sideloads/hook.sh reset-media-late-commands"
-    - "[ -d /cdrom/sideloads ] && bash /cdrom/sideloads/hook.sh late-commands || true"
+    - "bash /cdrom/sideloads/hook.sh late-commands || true"
+    - "mount -o rw,remount /cdrom"
 
     # Rename factory reset EFI directory so firmware won't show it. Ignore
     # errors on the way.
-    #- "mv /factory-reset/EFI /factory-reset/efi.factory || true"
-    - "mount -o rw,remount /cdrom"
     - "mv /cdrom/EFI /cdrom/efi.factory || true"
     - "sed -i 's#/EFI/boot/bootx64.efi#/efi.factory/boot/bootx64.efi#g' /target/etc/grub.d/99_reset || true"
     - "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash nomodeset modprobe.blacklist=nouveau nouveau.modeset=0\" # remove-before-flight' >> /target/etc/default/grub"
     - "curtin in-target --target=/target -- update-grub"
-
-    #- "bash /factory-reset/cloud-configs/grub/switch-stage.sh /factory-reset/cloud-configs/grub/reset-partition.cfg /factory-reset/boot/grub/grub.cfg || true"
 
     - "bash /cdrom/cloud-configs/grub/switch-stage.sh /cdrom/cloud-configs/grub/reset-partition.cfg /cdrom/boot/grub/grub.cfg"
 
@@ -50,4 +47,4 @@ autoinstall:
       timeout: 30
 
 bootcmd:
-  - ['plymouth', 'display-message', '--text', 'Starting installer...']
+  - ['plymouth', 'display-message', '--text', 'Starting factory installation...']
