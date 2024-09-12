@@ -22,7 +22,7 @@ if [ $num_partitions -lt 2 -o $num_partitions -gt 3 ]; then
 elif [ $num_partitions -eq 3 ]; then
     echo "The third partition should be unpartitioned, do you want to continue?"
     read -p "The data on the third partition will be lost, continue? [y/N] " answer
-    if [ "$answer" != "y" ]; then
+    if [ "$answer" = "y" ]; then
         parted $TARGET_DISK rm 3
     else
         exit 0
@@ -38,6 +38,7 @@ if [ "$EFI_TYPE" != "vfat" ]; then
     exit 1
 fi
 EFI_SIZE=$(lsblk -nbo SIZE $EFI_PART)
+# 1075×1024×1024
 if [ "$EFI_SIZE" != "1127219200" ]; then
     echo "The EFI partition should be 1127219200"
     exit 1
@@ -53,6 +54,7 @@ RECOVERY_PARTUUID=$(lsblk -no PARTUUID $RECOVERY_PART)
 # get the mount point of the recovery partition if it is mounted
 RECOVERY_MOUNTPOINT=$(lsblk -no MOUNTPOINT $RECOVERY_PART)
 if [ -z "$RECOVERY_MOUNTPOINT" ]; then
+    echo "The recovery partition is not mounted, mount it"
     RECOVERY_MOUNTPOINT="/mnt/recovery"
     mkdir -p $RECOVERY_MOUNTPOINT
     mount -o rw $RECOVERY_PART $RECOVERY_MOUNTPOINT
@@ -64,4 +66,5 @@ cp $GRUG_CFG $RECOVERY_MOUNTPOINT/boot/grub/grub.cfg
 sed -i "s/RECOVERY_PARTUUID/$RECOVERY_PARTUUID/g" $RECOVERY_MOUNTPOINT/boot/grub/grub.cfg
 echo "The grub config file has been injected into the recovery partition"
 echo "Please review the grub config file in the recovery partition: $RECOVERY_MOUNTPOINT/boot/grub/grub.cfg"
+echo "=============================================================="
 cat $RECOVERY_MOUNTPOINT/boot/grub/grub.cfg
