@@ -8,7 +8,7 @@ autoinstall:
       # use_gap - a feature set exposing the ability to edit existing partition tables and resize disks, is the feature use_gap in autoinstall.
       # use_gap allows for a guided install into existing free space without reformatting the entire disk.
       # In use_gap mode, we need an *unpartitioned* space on the disk to install the OS.
-      mode: use_gap
+      #mode: use_gap
       match:
         install-media: true # it takes the disk the installer was loaded from
 
